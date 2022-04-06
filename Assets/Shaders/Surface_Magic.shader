@@ -56,7 +56,7 @@ Shader "Ricardo/Magic" {
           float2 newUV = (IN.worldPos.xy * _ScreenMapping.xy) + _ScreenMapping.zw + float2(_Time.x,0); 
           float3 color =  tex2D (_MainTex, (newUV)).rgb;
           float3 colorGrad = tex2D (_ColorGrad, (IN.uv_MainTex)).rgb;
-          o.Albedo = colorGrad*_EmissionIntensity;  //lerp(IN.worldPos.zyx+1 + (color) * _EmissionIntensity,color * _EmissionIntensity,_LerpEmission); //_Color;//tex2D (_ColorGrad, IN.uv_MainTex).rgb;
+          o.Albedo = lerp(IN.worldPos.zyx+1 + (color) * _EmissionIntensity,colorGrad*_EmissionIntensity;,_LerpEmission); //_Color;//tex2D (_ColorGrad, IN.uv_MainTex).rgb;
           o.Emission =  colorGrad * _EmissionColorIntensity;
       }
       ENDCG
