@@ -99,7 +99,8 @@ Shader "Custom/Lava"
             o.Albedo = c;//length(normalize(dir));//dot(IN.worldNormal;//fixed3(value,value,value);
             // Metallic and smoothness come from slider variables
             half rim = 1.0 - saturate(dot (normalize(IN.viewDir), o.Normal));
-            o.Emission = _RimColor.rgb * pow (rim, _RimPower) +(_Emission* c * _Color);
+            float3 rimCol = _RimColor.rgb * pow (rim, _RimPower);
+            o.Emission =  rimCol +(_Emission* c * _Color);
 
            // o.Emission = c *_Color * value * _Emission;
             o.Metallic = _Metallic;
