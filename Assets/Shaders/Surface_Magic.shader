@@ -2,6 +2,7 @@ Shader "Ricardo/Magic" {
     Properties {
       _MainTex ("Texture", 2D) = "white" {}
       _ColorGrad ("Texture", 2D) = "white" {}
+      _AnimTexture ("Animation Texture", 2D) = "white" {}
 
       _ScreenMapping ("Vector for Tiling", VECTOR)=(1,1,0,0)
       _MaskVector ("Axis Mask for Movement", VECTOR)=(1,1,1)
@@ -12,6 +13,9 @@ Shader "Ricardo/Magic" {
       _RimColor("Rim Color", COLOR) = (0,0,0)
       _RimPower ("Rim Power", float) = 1
       _EmissionIntensity("Emission", float) = 1
+      _EmissionAnimationSpeed("Emission Animation Speed", float) = 0
+      _EmissionMin("Emission Minimum Value", float) = 0
+      _EmissionMax("Emission Maximun Value", float) = 1
       _EmissionColor("Emission COlor", COLOR) = (0,0,0)
       _EmissionColorIntensity("Emission Color Intensity", float) = 1
       _Amount ("Extrusion Amount", Range(-1,1)) = 0.5
@@ -40,14 +44,16 @@ Shader "Ricardo/Magic" {
       float _Amount,_Intensity,_EmissionIntensity,
       _Speed, _EmissionColorIntensity, _LerpEmission;
       float3 _EmissionColor, _Color;
-      sampler2D _MainTex,_ColorGrad;
+      sampler2D _MainTex,_ColorGrad, _AnimTexture;
       float4 _ScreenMapping;
       float3 _MaskVector;
-
+      float _EmissionAnimationSpeed, _EmissionMin, _EmissionMax;
 
       void vert (inout appdata_full v) {
           float4 col = tex2Dlod (_MainTex, float4(v.texcoord.xy,0,0));
-          
+            float4 anim = tex2Dlod (_AnimTexture, float4(sin(_Time.x),cos(_Time.x),0,0));
+
+          _MaskVector *= anim.rgb;
       #ifdef USE_NORMAL
           v.vertex.x += v.normal.x * max(0,sin(col.r * _Time.y*_Speed))*_Intensity * _MaskVector.x; 
           v.vertex.y += v.normal.y *max(0,sin(col.g * _Time.y*_Speed))*_Intensity * _MaskVector.y; 
@@ -74,7 +80,7 @@ Shader "Ricardo/Magic" {
           
            half rim = 1.0 - saturate(dot (normalize(IN.viewDir), o.Normal));
             float3 rimCol = _RimColor.rgb * pow (rim, _RimPower);
-          o.Emission =  rimCol + colorGrad * _EmissionColorIntensity;
+          o.Emission =  rimCol + colorGrad * _EmissionColorIntensity * clamp(1+sin(_Time.x*_EmissionAnimationSpeed),_EmissionMin, _EmissionMax);
           o.Alpha = 1;
       }
       ENDCG
